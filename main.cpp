@@ -1,42 +1,29 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "DynamicBlur.h"
+#include "dynamic_blur.hpp"
 
 int main()
 {
-    int WIN_WIDTH = 500;
-    int WIN_HEIGHT = 500;
+    int WIN_WIDTH = 1600;
+    int WIN_HEIGHT = 900;
 
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "BLUR", sf::Style::Default);
     window.setVerticalSyncEnabled(false);
     window.setMouseCursorVisible(true);
     window.setKeyRepeatEnabled(true);
 
-    bool toggle = false;
-
-    sf::RenderTexture finalRender;
-    finalRender.create(WIN_WIDTH, WIN_HEIGHT);
-
-    int BLUR_SCALE = 4;
-    sf::RenderTexture blurTexture;
-    blurTexture.create(WIN_WIDTH, WIN_HEIGHT);
-    sf::RenderTexture downsizedTexture;
-    downsizedTexture.create(WIN_WIDTH/BLUR_SCALE, WIN_HEIGHT/BLUR_SCALE);
-
-    sf::Shader drawer;
-    if (!drawer.loadFromFile("drawer.frag", sf::Shader::Fragment))
-        std::cout << "Erreur" << std::endl;
-
-    drawer.setParameter("WIDTH", WIN_WIDTH);
-    drawer.setParameter("HEIGHT", WIN_HEIGHT);
+    sf::RenderTexture render_target;
+	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 
     sf::Texture texture;
-    texture.loadFromFile("img.jpg");
+    texture.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/img.jpg");
 
-    DynamicBlur dblur(WIN_WIDTH, WIN_HEIGHT);
+	Blur blur(WIN_WIDTH, WIN_HEIGHT);
 
     double time = 0;
+
+	uint8_t intensity = 1;
 
     while (window.isOpen())
     {
@@ -56,8 +43,11 @@ int main()
                     window.close();
                     break;
                 case sf::Keyboard::A:
-                    toggle = !toggle;
-                    break;
+                    ++intensity;
+					break;
+				case sf::Keyboard::E:
+					--intensity;
+					break;
                 default:
                     break;
                 }
@@ -66,28 +56,25 @@ int main()
 
         time += 0.1;
 
+		render_target.draw(sf::Sprite(texture));
+		render_target.display();
+
+		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
+		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
+		rectangle.setRotation(time);
+		render_target.draw(rectangle);
+		render_target.display();
+		
+		for (int i(10); i--;)
+		{
+			render_target.draw(sf::Sprite(blur.apply2(render_target.getTexture(), 1)));
+			render_target.display();
+		}
+
         window.clear(sf::Color::Black);
 
-        finalRender.clear(sf::Color::Black);
-        blurTexture.clear(sf::Color::Black);
-        downsizedTexture.clear(sf::Color::Black);
+		window.draw(sf::Sprite(blur.apply2(render_target.getTexture(), intensity)));
 
-        sf::RectangleShape rectangle(sf::Vector2f(100, 200));
-        rectangle.setPosition(WIN_WIDTH/2, WIN_HEIGHT/2);
-        rectangle.rotate(time);
-
-        finalRender.draw(sf::Sprite(texture));
-        finalRender.draw(rectangle);
-        finalRender.display();
-
-        //BLUR zone
-
-        drawer.setParameter("MIN_HEIGHT", WIN_HEIGHT-mousePosition.y);
-        drawer.setParameter("ORIGINAL_TEXTURE", finalRender.getTexture());
-        finalRender.draw(sf::Sprite(dblur(finalRender.getTexture())), &drawer);
-        finalRender.display();
-
-        window.draw(sf::Sprite(finalRender.getTexture()));
         window.display();
     }
 
