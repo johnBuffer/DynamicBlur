@@ -1,29 +1,35 @@
-#include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "dynamic_blur.hpp"
+void downscale(sf::RenderTexture& tex, sf::RenderTexture& tmp)
+{
+	// Downscale
+	sf::Sprite down_sprite(tex.getTexture());
+	down_sprite.scale(0.5f, 0.5f);
+	tmp.draw(down_sprite);
+	tmp.display();
+
+	// Upscale
+	sf::Sprite up_sprite(tmp.getTexture());
+	up_sprite.scale(2.0f, 2.0f);
+	tex.draw(up_sprite);
+	tex.display();
+}
 
 int main()
 {
-    int WIN_WIDTH = 1600;
-    int WIN_HEIGHT = 900;
+	constexpr uint32_t  WIN_WIDTH = 1600;
+    constexpr uint32_t WIN_HEIGHT = 900;
 
-    sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "BLUR", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "TEST", sf::Style::Default);
     window.setVerticalSyncEnabled(false);
-    window.setMouseCursorVisible(true);
     window.setKeyRepeatEnabled(true);
 
-    sf::RenderTexture render_target;
+    sf::RenderTexture render_target, tmp;
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
+	tmp.create(WIN_WIDTH, WIN_HEIGHT);
 
-    sf::Texture texture;
-    texture.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/img.jpg");
-
-	Blur blur(WIN_WIDTH, WIN_HEIGHT);
-
-    double time = 0;
-
-	uint8_t intensity = 1;
+    float time = 0.0f;
+	uint8_t intensity = 0;
 
     while (window.isOpen())
     {
@@ -56,24 +62,24 @@ int main()
 
         time += 0.1;
 
-		render_target.draw(sf::Sprite(texture));
-		render_target.display();
+		render_target.clear();
 
+		// Debug rectangle
 		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
 		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
 		rectangle.setRotation(time);
+
 		render_target.draw(rectangle);
 		render_target.display();
-		
-		for (int i(10); i--;)
+
+		for (uint8_t i(0); i < intensity; ++i)
 		{
-			render_target.draw(sf::Sprite(blur.apply2(render_target.getTexture(), 1)));
-			render_target.display();
+			downscale(render_target, tmp);
 		}
 
         window.clear(sf::Color::Black);
 
-		window.draw(sf::Sprite(blur.apply2(render_target.getTexture(), intensity)));
+		window.draw(sf::Sprite(render_target.getTexture()));
 
         window.display();
     }
