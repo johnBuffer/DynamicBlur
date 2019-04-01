@@ -82,6 +82,5 @@ int main()
 }
 
 ```
-Result
-
+### Result
 ![bloom](https://github.com/johnBuffer/DynamicBlur/blob/master/img/bloom.png)
