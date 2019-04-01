@@ -54,21 +54,25 @@ int main()
         }
 
         time += 0.1;
-	      render_target.clear();
+	
+	render_target.clear();
         bloom.clear();
         
+	// Draw a rotating rectangle
         sf::RectangleShape rectangle(sf::Vector2f(250, 100));
         rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
         rectangle.setRotation(time);
         render_target.draw(rectangle);
         render_target.display();
-
+	
+	// Add it to the bloom target
         bloom.draw(rectangle);
         bloom.display();
 
         window.clear(sf::Color::Black);
 
         window.draw(sf::Sprite(render_target.getTexture()));
+	// Add bloom
         window.draw(sf::Sprite(blur.apply(bloom.getTexture(), intensity)), sf::BlendAdd);
 
         window.display();
