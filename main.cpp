@@ -1,19 +1,5 @@
 #include <SFML/Graphics.hpp>
-
-void downscale(sf::RenderTexture& tex, sf::RenderTexture& tmp)
-{
-	// Downscale
-	sf::Sprite down_sprite(tex.getTexture());
-	down_sprite.scale(0.5f, 0.5f);
-	tmp.draw(down_sprite);
-	tmp.display();
-
-	// Upscale
-	sf::Sprite up_sprite(tmp.getTexture());
-	up_sprite.scale(2.0f, 2.0f);
-	tex.draw(up_sprite);
-	tex.display();
-}
+#include "dynamic_blur.hpp"
 
 int main()
 {
@@ -21,12 +7,16 @@ int main()
     constexpr uint32_t WIN_HEIGHT = 900;
 
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "TEST", sf::Style::Default);
-    window.setVerticalSyncEnabled(false);
+    window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(true);
 
-    sf::RenderTexture render_target, tmp;
+    sf::RenderTexture render_target;
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
-	tmp.create(WIN_WIDTH, WIN_HEIGHT);
+
+	sf::Texture texture;
+	texture.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/img.jpg");
+
+	Blur blur(WIN_WIDTH, WIN_HEIGHT);
 
     float time = 0.0f;
 	uint8_t intensity = 0;
@@ -60,9 +50,11 @@ int main()
             }
         }
 
-        time += 0.1;
-
+        time = 50.1;
+	
 		render_target.clear();
+
+		render_target.draw(sf::Sprite(texture));
 
 		// Debug rectangle
 		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
@@ -72,14 +64,9 @@ int main()
 		render_target.draw(rectangle);
 		render_target.display();
 
-		for (uint8_t i(0); i < intensity; ++i)
-		{
-			downscale(render_target, tmp);
-		}
-
         window.clear(sf::Color::Black);
 
-		window.draw(sf::Sprite(render_target.getTexture()));
+		window.draw(sf::Sprite(blur.apply(render_target.getTexture(), intensity)));
 
         window.display();
     }
