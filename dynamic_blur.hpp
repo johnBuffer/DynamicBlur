@@ -2,6 +2,56 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+const std::string vert_shader =
+"void main() \
+{ \
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; \
+	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0; \
+	gl_FrontColor = gl_Color; \
+}";
+
+const std::string w_shader =
+"uniform sampler2D texture; \
+uniform float WIDTH; \
+uniform float HEIGHT; \
+vec4 weight = vec4(0.006, 0.061, 0.242, 0.383); \
+float WIDTH_STEP = 1.0 / WIDTH; \
+float HEIGHT_STEP = 1.0 / HEIGHT; \
+void main() \
+{ \
+	vec2 pos = gl_TexCoord[0].xy; \
+	vec2 offset = vec2(WIDTH_STEP, 0.0); \
+	vec4 color = texture2D(texture, pos) * weight[3]; \
+	color += texture2D(texture, pos + offset * 1) * weight[2]; \
+	color += texture2D(texture, pos + offset * 2) * weight[1]; \
+	color += texture2D(texture, pos + offset * 3) * weight[0]; \
+	color += texture2D(texture, pos - offset * 1) * weight[2]; \
+	color += texture2D(texture, pos - offset * 2) * weight[1]; \
+	color += texture2D(texture, pos - offset * 3) * weight[0]; \
+	gl_FragColor = vec4(color.xyz, 1.0); \
+}";
+
+const std::string h_shader =
+"uniform sampler2D texture; \
+uniform float WIDTH; \
+uniform float HEIGHT; \
+vec4 weight = vec4(0.006, 0.061, 0.242, 0.383); \
+float WIDTH_STEP = 1.0 / WIDTH; \
+float HEIGHT_STEP = 1.0 / HEIGHT; \
+void main() \
+{ \
+	vec2 pos = gl_TexCoord[0].xy; \
+	vec2 offset = vec2(0.0, HEIGHT_STEP); \
+	vec4 color = texture2D(texture, pos) * weight[3]; \
+	color += texture2D(texture, pos + offset * 1) * weight[2]; \
+	color += texture2D(texture, pos + offset * 2) * weight[1]; \
+	color += texture2D(texture, pos + offset * 3) * weight[0]; \
+	color += texture2D(texture, pos - offset * 1) * weight[2]; \
+	color += texture2D(texture, pos - offset * 2) * weight[1]; \
+	color += texture2D(texture, pos - offset * 3) * weight[0]; \
+	gl_FragColor = vec4(color.xyz, 1.0); \
+}";
+
 class Blur
 {
 public:
@@ -12,8 +62,8 @@ public:
 		m_render_textures[0].create(width, height);
 		m_render_textures[1].create(width, height);
 
-		m_blur_w.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/vert.vert", "C:/Users/Jean/Documents/Code/cpp/DynamicBlur/blur_w.frag");
-		m_blur_h.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/vert.vert", "C:/Users/Jean/Documents/Code/cpp/DynamicBlur/blur_h.frag");
+		m_blur_w.loadFromMemory(vert_shader, w_shader);
+		m_blur_h.loadFromMemory(vert_shader, h_shader);
 		
 		m_blur_w.setUniform("WIDTH" , float(width));
 		m_blur_w.setUniform("HEIGHT", float(height));
@@ -32,8 +82,15 @@ public:
 		float scale(1.0f);
 		for (uint8_t i(0); i < intensity; ++i)
 		{
-			process(0, scale, scale*0.5f);
-			scale *= 0.5f;
+			float fact(0.5f);
+			if (i<intensity-1)
+			{
+				fact = 0.25f;
+				++i;
+			}
+
+			process(0, scale, scale*fact);
+			scale *= fact;
 		}
 
 		for (uint8_t i(0); i < intensity; ++i)

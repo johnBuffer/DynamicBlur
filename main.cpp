@@ -7,14 +7,12 @@ int main()
     constexpr uint32_t WIN_HEIGHT = 900;
 
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "TEST", sf::Style::Default);
-    window.setVerticalSyncEnabled(true);
+    window.setVerticalSyncEnabled(false);
     window.setKeyRepeatEnabled(true);
 
-    sf::RenderTexture render_target;
+    sf::RenderTexture render_target, bloom;
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
-
-	sf::Texture texture;
-	texture.loadFromFile("C:/Users/Jean/Documents/Code/cpp/DynamicBlur/img.jpg");
+	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
 	Blur blur(WIN_WIDTH, WIN_HEIGHT);
 
@@ -50,23 +48,25 @@ int main()
             }
         }
 
-        time = 50.1;
+        time += 0.1;
 	
 		render_target.clear();
-
-		render_target.draw(sf::Sprite(texture));
+		bloom.clear();
 
 		// Debug rectangle
 		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
 		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
 		rectangle.setRotation(time);
-
 		render_target.draw(rectangle);
 		render_target.display();
 
+		bloom.draw(rectangle);
+		bloom.display();
+
         window.clear(sf::Color::Black);
 
-		window.draw(sf::Sprite(blur.apply(render_target.getTexture(), intensity)));
+		window.draw(sf::Sprite(render_target.getTexture()));
+		window.draw(sf::Sprite(blur.apply(bloom.getTexture(), intensity)), sf::BlendAdd);
 
         window.display();
     }
