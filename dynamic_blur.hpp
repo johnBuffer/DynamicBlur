@@ -22,12 +22,12 @@ void main() \
 	vec2 pos = gl_TexCoord[0].xy; \
 	vec2 offset = vec2(WIDTH_STEP, 0.0); \
 	vec4 color = texture2D(texture, pos) * weight[3]; \
-	color += texture2D(texture, pos + offset * 1) * weight[2]; \
-	color += texture2D(texture, pos + offset * 2) * weight[1]; \
-	color += texture2D(texture, pos + offset * 3) * weight[0]; \
-	color += texture2D(texture, pos - offset * 1) * weight[2]; \
-	color += texture2D(texture, pos - offset * 2) * weight[1]; \
-	color += texture2D(texture, pos - offset * 3) * weight[0]; \
+	color += texture2D(texture, pos + offset * 1.5) * weight[2]; \
+	color += texture2D(texture, pos + offset * 2.5) * weight[1]; \
+	color += texture2D(texture, pos + offset * 3.5) * weight[0]; \
+	color += texture2D(texture, pos - offset * 1.5) * weight[2]; \
+	color += texture2D(texture, pos - offset * 2.5) * weight[1]; \
+	color += texture2D(texture, pos - offset * 3.5) * weight[0]; \
 	gl_FragColor = vec4(color.xyz, 1.0); \
 }";
 
@@ -43,12 +43,12 @@ void main() \
 	vec2 pos = gl_TexCoord[0].xy; \
 	vec2 offset = vec2(0.0, HEIGHT_STEP); \
 	vec4 color = texture2D(texture, pos) * weight[3]; \
-	color += texture2D(texture, pos + offset * 1) * weight[2]; \
-	color += texture2D(texture, pos + offset * 2) * weight[1]; \
-	color += texture2D(texture, pos + offset * 3) * weight[0]; \
-	color += texture2D(texture, pos - offset * 1) * weight[2]; \
-	color += texture2D(texture, pos - offset * 2) * weight[1]; \
-	color += texture2D(texture, pos - offset * 3) * weight[0]; \
+	color += texture2D(texture, pos + offset * 1.5) * weight[2]; \
+	color += texture2D(texture, pos + offset * 2.5) * weight[1]; \
+	color += texture2D(texture, pos + offset * 3.5) * weight[0]; \
+	color += texture2D(texture, pos - offset * 1.5) * weight[2]; \
+	color += texture2D(texture, pos - offset * 2.5) * weight[1]; \
+	color += texture2D(texture, pos - offset * 3.5) * weight[0]; \
 	gl_FragColor = vec4(color.xyz, 1.0); \
 }";
 
@@ -61,6 +61,9 @@ public:
 	{
 		m_render_textures[0].create(width, height);
 		m_render_textures[1].create(width, height);
+
+		m_render_textures[0].setSmooth(true);
+		m_render_textures[1].setSmooth(true);
 
 		m_blur_w.loadFromMemory(vert_shader, w_shader);
 		m_blur_h.loadFromMemory(vert_shader, h_shader);
