@@ -82,3 +82,9 @@ int main()
 }
 
 ```
+### Result
+![bloom](https://github.com/johnBuffer/DynamicBlur/blob/master/img/bloom.png)
+
+## Future work
+- Remove border artifacts
+- Allow region blur
