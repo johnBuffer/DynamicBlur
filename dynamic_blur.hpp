@@ -77,7 +77,6 @@ public:
 		m_render_textures[0].draw(input_sprite);
 		m_render_textures[0].display();
 
-		const uint32_t inv_quality(1.0f / m_quality);
 		float scale(1.0f);
 		for (uint8_t i(0); i < intensity; ++i)
 		{
@@ -98,6 +97,7 @@ public:
 			scale *= 2.0f;
 		}
 
+		const float inv_quality(1.0f / m_quality);
 		sf::Sprite result(m_render_textures[0].getTexture());
 		result.scale(inv_quality, inv_quality);
 
