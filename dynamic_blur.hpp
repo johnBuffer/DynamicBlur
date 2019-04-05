@@ -51,12 +51,13 @@ void main()                                                      \
 class Blur
 {
 public:
-	Blur(uint32_t width, uint32_t height) :
-		m_width(width),
-		m_height(height)
+	Blur(uint32_t width, uint32_t height, float quality = 1.0f) :
+		m_quality(quality),
+		m_width(uint32_t(width * quality)),
+		m_height(uint32_t(height * quality))
 	{
-		m_render_textures[0].create(width, height);
-		m_render_textures[1].create(width, height);
+		m_render_textures[0].create(m_width, m_height);
+		m_render_textures[1].create(m_width, m_height);
 
 		m_render_textures[0].setSmooth(true);
 		m_render_textures[1].setSmooth(true);
@@ -64,17 +65,19 @@ public:
 		m_blur_w.loadFromMemory(vert_shader, w_shader);
 		m_blur_h.loadFromMemory(vert_shader, h_shader);
 		
-		m_blur_w.setUniform("WIDTH" , float(width));
-		m_blur_h.setUniform("HEIGHT", float(height));
+		m_blur_w.setUniform("WIDTH" , float(m_width));
+		m_blur_h.setUniform("HEIGHT", float(m_height));
 	}
 
-	const sf::Texture& apply(const sf::Texture& texture, uint8_t intensity)
+	const sf::Sprite apply(const sf::Texture& texture, uint8_t intensity)
 	{
 		// Sprite of intput texture
 		sf::Sprite input_sprite(texture);
+		input_sprite.scale(m_quality, m_quality);
 		m_render_textures[0].draw(input_sprite);
 		m_render_textures[0].display();
 
+		const uint32_t inv_quality(1.0f / m_quality);
 		float scale(1.0f);
 		for (uint8_t i(0); i < intensity; ++i)
 		{
@@ -95,12 +98,16 @@ public:
 			scale *= 2.0f;
 		}
 
-		return m_render_textures[0].getTexture();
+		sf::Sprite result(m_render_textures[0].getTexture());
+		result.scale(inv_quality, inv_quality);
+
+		return result;
 	}
 
 private:
-	uint32_t m_width;
-	uint32_t m_height;
+	const float m_quality;
+	const uint32_t m_width;
+	const uint32_t m_height;
 	sf::Shader m_blur_w;
 	sf::Shader m_blur_h;
 	sf::RenderTexture m_render_textures[2];
@@ -110,7 +117,7 @@ private:
 		float scale_fact = out_scale / in_scale;
 		// Width pass
 		sf::Sprite pass_w_sprite(m_render_textures[first].getTexture());
-		pass_w_sprite.setTextureRect(sf::IntRect(0, 0, m_width * in_scale, m_height * in_scale));
+		pass_w_sprite.setTextureRect(sf::IntRect(0, 0, uint32_t(m_width * in_scale), uint32_t(m_height * in_scale)));
 		pass_w_sprite.scale(scale_fact, scale_fact);
 		m_render_textures[!first].draw(pass_w_sprite, &m_blur_w);
 		m_render_textures[!first].display();
