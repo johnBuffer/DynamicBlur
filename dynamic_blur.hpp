@@ -13,10 +13,8 @@ const std::string vert_shader =
 const std::string w_shader =
 "uniform sampler2D texture; \
 uniform float WIDTH; \
-uniform float HEIGHT; \
 vec4 weight = vec4(0.006, 0.061, 0.242, 0.383); \
 float WIDTH_STEP = 1.0 / WIDTH; \
-float HEIGHT_STEP = 1.0 / HEIGHT; \
 void main() \
 { \
 	vec2 pos = gl_TexCoord[0].xy; \
@@ -33,10 +31,8 @@ void main() \
 
 const std::string h_shader =
 "uniform sampler2D texture; \
-uniform float WIDTH; \
 uniform float HEIGHT; \
 vec4 weight = vec4(0.006, 0.061, 0.242, 0.383); \
-float WIDTH_STEP = 1.0 / WIDTH; \
 float HEIGHT_STEP = 1.0 / HEIGHT; \
 void main() \
 { \
