@@ -65,9 +65,6 @@ public:
 		m_blur_h.loadFromMemory(vert_shader, h_shader);
 		
 		m_blur_w.setUniform("WIDTH" , float(width));
-		m_blur_w.setUniform("HEIGHT", float(height));
-
-		m_blur_h.setUniform("WIDTH" , float(width));
 		m_blur_h.setUniform("HEIGHT", float(height));
 	}
 
