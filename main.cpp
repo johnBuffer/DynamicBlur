@@ -66,7 +66,7 @@ int main()
         window.clear(sf::Color::Black);
 
 		window.draw(sf::Sprite(render_target.getTexture()));
-		window.draw(sf::Sprite(blur.apply(bloom.getTexture(), intensity)), sf::BlendAdd);
+		window.draw(blur.apply(bloom.getTexture(), intensity), sf::BlendAdd);
 
         window.display();
     }
