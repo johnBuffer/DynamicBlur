@@ -20,6 +20,25 @@ sf::Sprite filtered(blur.apply(bloom.getTexture(), intensity);
 ```
 Where intensity is the number of __blur iterations__.
 
+## Define a region
+
+If you only need to blur a part of your texture you can define a region
+
+### 1. Define a region
+
+```cpp
+// Retrieve mouse coordinates
+sf::Vector2i mousePosition (sf::Mouse::getPosition(window));
+
+// Define region
+uint32_t region_width(512);
+uint32_t region_height(256);
+blur.setRegion(mousePosition.x - region_width/2, mousePosition.y - region_height/2, region_width, region_height);
+```
+
+### 2. Result
+![region](https://github.com/johnBuffer/DynamicBlur/blob/master/img/region_blur.png)
+
 ## Quick bloom example
 
 ```cpp
@@ -87,4 +106,5 @@ int main()
 
 ## Future work
  - [x] Remove border artifacts
- - [ ] Allow region blur
+ - [x] Allow region blur
+ - [ ] Support per pixel regions
