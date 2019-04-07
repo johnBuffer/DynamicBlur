@@ -14,14 +14,19 @@ int main()
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
-	Blur blur(WIN_WIDTH, WIN_HEIGHT);
+	Blur blur(WIN_WIDTH, WIN_HEIGHT, 0.25f);
 
     float time = 0.0f;
 	uint8_t intensity = 0;
 
+	sf::Texture background;
+	background.loadFromFile("C:/Users/Jean/Pictures/wallhaven-389020.jpg");
+
     while (window.isOpen())
     {
         sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+
+		blur.setRegion(mousePosition.x - 256, mousePosition.y - 128, 512, 256);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -51,12 +56,12 @@ int main()
         time += 0.1;
 	
 		render_target.clear();
-		bloom.clear();
 
 		// Debug rectangle
 		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
 		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
 		rectangle.setRotation(time);
+		render_target.draw(sf::Sprite(background));
 		render_target.draw(rectangle);
 		render_target.display();
 
@@ -66,7 +71,7 @@ int main()
         window.clear(sf::Color::Black);
 
 		window.draw(sf::Sprite(render_target.getTexture()));
-		window.draw(blur.apply(bloom.getTexture(), intensity), sf::BlendAdd);
+		window.draw(blur.apply(render_target.getTexture(), intensity));
 
         window.display();
     }
