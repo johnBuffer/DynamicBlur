@@ -19,14 +19,13 @@ int main()
     float time = 0.0f;
 	uint8_t intensity = 0;
 
-	sf::Texture background;
-	background.loadFromFile("C:/Users/Jean/Pictures/wallhaven-389020.jpg");
-
     while (window.isOpen())
     {
         sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 
-		blur.setRegion(mousePosition.x - 256, mousePosition.y - 128, 512, 256);
+		uint32_t region_width(512);
+		uint32_t region_height(256);
+		blur.setRegion(mousePosition.x - region_width/2, mousePosition.y - region_height/2, region_width, region_height);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -61,7 +60,6 @@ int main()
 		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
 		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
 		rectangle.setRotation(time);
-		render_target.draw(sf::Sprite(background));
 		render_target.draw(rectangle);
 		render_target.display();
 
