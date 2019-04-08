@@ -52,8 +52,8 @@ class Blur
 {
 public:
 	Blur(uint32_t width, uint32_t height, float quality = 1.0f) :
-		m_region_x(0.0f),
-		m_region_y(0.0f),
+		m_region_x(0),
+		m_region_y(0),
 		m_region_width(width),
 		m_region_height(height),
 		m_quality(quality),
@@ -77,7 +77,7 @@ public:
 		m_blur_h.setUniform("HEIGHT", float(m_height));
 	}
 
-	void setRegion(float x, float y, float width, float height)
+	void setRegion(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		m_region_x = x;
 		m_region_y = y;
@@ -90,7 +90,7 @@ public:
 	{
 		// Sprite of intput texture
 		sf::Sprite input_sprite(texture);
-		input_sprite.setTextureRect(sf::IntRect(m_region_x, m_region_y, m_region_width*1.25f, m_region_height*1.25f));
+		input_sprite.setTextureRect(sf::IntRect(m_region_x, m_region_y, uint32_t(m_region_width*1.25f), uint32_t(m_region_height*1.25f)));
 		input_sprite.scale(m_quality, m_quality);
 		m_render_textures[0].draw(input_sprite);
 		m_render_textures[0].display();
@@ -119,18 +119,18 @@ public:
 		
 		// Generate the sprite
 		sf::Sprite result(m_render_textures[0].getTexture());
-		result.setTextureRect(sf::IntRect(0, 0, m_region_width * m_quality, m_region_height * m_quality));
-		result.setPosition(m_region_x, m_region_y);
+		result.setTextureRect(sf::IntRect(0, 0, uint32_t(m_region_width * m_quality), uint32_t(m_region_height * m_quality)));
+		result.setPosition(float(m_region_x), float(m_region_y));
 		result.scale(inv_quality, inv_quality);
 
 		return result;
 	}
 
 private:
-	float m_region_x;
-	float m_region_y;
-	float m_region_width;
-	float m_region_height;
+	uint32_t m_region_x;
+	uint32_t m_region_y;
+	uint32_t m_region_width;
+	uint32_t m_region_height;
 
 	const float m_quality;
 	const uint32_t m_width;
