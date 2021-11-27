@@ -6,6 +6,7 @@ const std::string vert_shader =
 "void main()                                                  \
 {                                                             \
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0; \
+    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;   \
 }";
 
 const std::string w_shader =
@@ -65,8 +66,8 @@ public:
         uint32_t current_buffer = 0;
         m_textures[current_buffer].draw(sprite);
         //current_buffer = blurIteration(current_buffer, 1);
-        for (uint32_t i(m_iterations); i--;) {
-            current_buffer = blurPass(current_buffer, m_iterations - i);
+        for (uint32_t i(0); i<m_iterations; i +=2 ) {
+            current_buffer = blurPass(current_buffer, i);
         }
         for (uint32_t i(m_iterations); i--;) {
             current_buffer = blurPass(current_buffer, i);
@@ -102,8 +103,8 @@ private:
 
     void createShaders()
     {
-        m_horizontal.loadFromFile("../shaders/vertex.glsl", "../shaders/fragment_hori.glsl");
-        m_vertical.loadFromFile("../shaders/vertex.glsl", "../shaders/fragment_vert.glsl");
+        m_horizontal.loadFromMemory(vert_shader, w_shader);
+        m_vertical.loadFromMemory(vert_shader, h_shader);
         // Set pixel steps in shader
         m_horizontal.setUniform("WIDTH", static_cast<float>(m_render_size.x));
         m_vertical.setUniform("HEIGHT", static_cast<float>(m_render_size.y));
