@@ -2,57 +2,54 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-const std::string vert_shader =
+constexpr char VERTEX_SHADER_SRC[] =
 "void main()                                                  \
 {                                                             \
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0; \
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;   \
 }";
 
-const std::string w_shader =
-"uniform sampler2D texture;                                      \
-uniform float WIDTH;                                             \
-vec4 weight = vec4(0.006, 0.061, 0.242, 0.383);                  \
-float WIDTH_STEP = 1.0 / WIDTH;                                  \
-void main()                                                      \
-{                                                                \
-	vec2 pos = gl_TexCoord[0].xy;                                \
-	vec2 offset = vec2(WIDTH_STEP, 0.0);                         \
-	vec4 color = texture2D(texture, pos) * weight[3];            \
-	color += texture2D(texture, pos + offset * 1.5) * weight[2]; \
-	color += texture2D(texture, pos + offset * 2.5) * weight[1]; \
-	color += texture2D(texture, pos + offset * 3.5) * weight[0]; \
-	color += texture2D(texture, pos - offset * 1.5) * weight[2]; \
-	color += texture2D(texture, pos - offset * 2.5) * weight[1]; \
-	color += texture2D(texture, pos - offset * 3.5) * weight[0]; \
-	gl_FragColor = vec4(color.xyz, 1.0);                         \
+constexpr char FRAG_X_SHADER_SRC[] =
+"uniform sampler2D texture;                                  \
+uniform float WIDTH;                                         \
+float WIDTH_STEP = 1.0 / WIDTH;                              \
+void main()                                                  \
+{                                                            \
+	vec2 pos = gl_TexCoord[0].xy;                            \
+	vec2 offset = vec2(WIDTH_STEP, 0.0);                     \
+	vec4 color = texture2D(texture, pos) * 0.383;            \
+	color += texture2D(texture, pos + offset * 1.5) * 0.242; \
+	color += texture2D(texture, pos + offset * 2.5) * 0.061; \
+	color += texture2D(texture, pos + offset * 3.5) * 0.006; \
+	color += texture2D(texture, pos - offset * 1.5) * 0.242; \
+	color += texture2D(texture, pos - offset * 2.5) * 0.061; \
+	color += texture2D(texture, pos - offset * 3.5) * 0.006; \
+	gl_FragColor = vec4(color.xyz, 1.0);                     \
 }";
 
-const std::string h_shader =
-"uniform sampler2D texture;                                      \
-uniform float HEIGHT;                                            \
-vec4 weight = vec4(0.006, 0.061, 0.242, 0.383);                  \
-float HEIGHT_STEP = 1.0 / HEIGHT;                                \
-void main()                                                      \
-{                                                                \
-	vec2 pos = gl_TexCoord[0].xy;                                \
-	vec2 offset = vec2(0.0, HEIGHT_STEP);                        \
-	vec4 color = texture2D(texture, pos) * weight[3];            \
-	color += texture2D(texture, pos + offset * 1.5) * weight[2]; \
-	color += texture2D(texture, pos + offset * 2.5) * weight[1]; \
-	color += texture2D(texture, pos + offset * 3.5) * weight[0]; \
-	color += texture2D(texture, pos - offset * 1.5) * weight[2]; \
-	color += texture2D(texture, pos - offset * 2.5) * weight[1]; \
-	color += texture2D(texture, pos - offset * 3.5) * weight[0]; \
-	gl_FragColor = vec4(color.xyz, 1.0);                         \
+constexpr char FRAG_Y_SHADER_SRC[] =
+"uniform sampler2D texture;                                  \
+uniform float HEIGHT;                                        \
+float HEIGHT_STEP = 1.0 / HEIGHT;                            \
+void main()                                                  \
+{                                                            \
+	vec2 pos = gl_TexCoord[0].xy;                            \
+	vec2 offset = vec2(0.0, HEIGHT_STEP);                    \
+	vec4 color = texture2D(texture, pos) * 0.383;            \
+	color += texture2D(texture, pos + offset * 1.5) * 0.242; \
+	color += texture2D(texture, pos + offset * 2.5) * 0.061; \
+	color += texture2D(texture, pos + offset * 3.5) * 0.006; \
+	color += texture2D(texture, pos - offset * 1.5) * 0.242; \
+	color += texture2D(texture, pos - offset * 2.5) * 0.061; \
+	color += texture2D(texture, pos - offset * 3.5) * 0.006; \
+	gl_FragColor = vec4(color.xyz, 1.0);                     \
 }";
 
 class Blur
 {
 public:
-    Blur(sf::Vector2u render_size, float scale, uint32_t iterations)
+    Blur(sf::Vector2u render_size, float scale, int32_t iterations)
         : m_render_size(render_size)
-        , m_render_scale(scale)
         , m_iterations(iterations)
     {
         createTextures();
@@ -66,10 +63,10 @@ public:
         uint32_t current_buffer = 0;
         m_textures[current_buffer].draw(sprite);
         //current_buffer = blurIteration(current_buffer, 1);
-        for (uint32_t i(0); i<m_iterations; i +=2 ) {
+        for (int32_t i(0); i<m_iterations; i += 2) {
             current_buffer = blurPass(current_buffer, i);
         }
-        for (uint32_t i(m_iterations); i--;) {
+        for (int32_t i(m_iterations); i >= 0; i -= 3) {
             current_buffer = blurPass(current_buffer, i);
         }
         m_textures[current_buffer].display();
@@ -78,9 +75,8 @@ public:
     }
 
 private:
-    sf::Vector2u      m_render_size;
-    float             m_render_scale;
-    uint32_t          m_iterations;
+    sf::Vector2i      m_render_size;
+    int32_t           m_iterations;
     sf::RenderTexture m_textures[2];
 
     // Shaders
@@ -103,8 +99,8 @@ private:
 
     void createShaders()
     {
-        m_horizontal.loadFromMemory(vert_shader, w_shader);
-        m_vertical.loadFromMemory(vert_shader, h_shader);
+        m_horizontal.loadFromMemory(VERTEX_SHADER_SRC, FRAG_X_SHADER_SRC);
+        m_vertical.loadFromMemory(VERTEX_SHADER_SRC, FRAG_Y_SHADER_SRC);
         // Set pixel steps in shader
         m_horizontal.setUniform("WIDTH", static_cast<float>(m_render_size.x));
         m_vertical.setUniform("HEIGHT", static_cast<float>(m_render_size.y));
@@ -132,10 +128,10 @@ private:
         return m_textures[source_buffer].getTexture();
     }
 
-    uint32_t blurPass(uint32_t source_buffer, uint32_t downscale)
+    uint32_t blurPass(uint32_t source_buffer, int32_t downscale)
     {
         // Initialize scales and rectangle
-        const float inv_scale = static_cast<float>(1 << downscale);
+        const auto inv_scale = static_cast<float>(1 << downscale);
         const float scale = 1.0f / inv_scale;
         const int32_t current_pass_size_x = m_render_size.x >> downscale;
         const int32_t current_pass_size_y = m_render_size.y >> downscale;
