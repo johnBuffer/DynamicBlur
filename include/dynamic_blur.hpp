@@ -48,7 +48,7 @@ void main()                                                  \
 class Blur
 {
 public:
-    Blur(sf::Vector2u render_size, float scale, int32_t iterations)
+    Blur(sf::Vector2u render_size, int32_t iterations)
         : m_render_size(render_size)
         , m_iterations(iterations)
     {
