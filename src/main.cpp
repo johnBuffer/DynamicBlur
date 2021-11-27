@@ -1,32 +1,27 @@
 #include <SFML/Graphics.hpp>
 #include "dynamic_blur.hpp"
 
+
 int main()
 {
-	constexpr uint32_t  WIN_WIDTH = 1600;
+	constexpr uint32_t WIN_WIDTH  = 1600;
     constexpr uint32_t WIN_HEIGHT = 900;
 
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "TEST", sf::Style::Default);
-    window.setVerticalSyncEnabled(false);
+    window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(true);
 
     sf::RenderTexture render_target, bloom;
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
-	Blur blur(WIN_WIDTH, WIN_HEIGHT, 0.25f);
+	Blur blur(WIN_WIDTH, WIN_HEIGHT, 1.0f);
 
     float time = 0.0f;
 	uint8_t intensity = 0;
 
     while (window.isOpen())
     {
-        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-
-		uint32_t region_width(512);
-		uint32_t region_height(256);
-		blur.setRegion(mousePosition.x - region_width/2, mousePosition.y - region_height/2, region_width, region_height);
-
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -52,7 +47,7 @@ int main()
             }
         }
 
-        time += 0.1;
+        time += 0.1f;
 	
 		render_target.clear();
 

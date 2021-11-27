@@ -51,3 +51,7 @@ ShaderTest2.depend
 ShaderTest2.cbp
 *.exe
 *.dll
+
+build*/
+cmake-*/
+.idea/
