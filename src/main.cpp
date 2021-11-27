@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "dynamic_blur.hpp"
+#include "event_manager.hpp"
 
 
 int main()
@@ -15,56 +16,30 @@ int main()
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
-	Blur blur(WIN_WIDTH, WIN_HEIGHT, 1.0f);
+	Blur blur({WIN_WIDTH, WIN_HEIGHT}, 1.0f, 2);
 
-    float time = 0.0f;
-	uint8_t intensity = 0;
+    sfev::EventManager event_manager(window, true);
+    event_manager.addKeyPressedCallback(sf::Keyboard::Escape, [&](sfev::CstEv){window.close();});
+    event_manager.addEventCallback(sf::Event::Closed, [&](sfev::CstEv){window.close();});
 
     while (window.isOpen())
     {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
+        event_manager.processEvents();
 
-            if (event.type == sf::Event::KeyPressed)
-            {
-                switch (event.key.code)
-                {
-                case sf::Keyboard::Escape:
-                    window.close();
-                    break;
-                case sf::Keyboard::A:
-                    ++intensity;
-					break;
-				case sf::Keyboard::E:
-					--intensity;
-					break;
-                default:
-                    break;
-                }
-            }
-        }
+        const sf::Vector2i mouse_position = sf::Mouse::getPosition(window);
 
-        time += 0.1f;
-	
 		render_target.clear();
-
-		// Debug rectangle
-		sf::RectangleShape rectangle(sf::Vector2f(250, 100));
-		rectangle.setPosition(WIN_WIDTH / 2, WIN_HEIGHT / 2);
-		rectangle.setRotation(time);
-		render_target.draw(rectangle);
-		render_target.display();
-
-		bloom.draw(rectangle);
-		bloom.display();
+        const float circle_radius = 100.0f;
+        sf::CircleShape mouse_circle(circle_radius);
+        mouse_circle.setOrigin(circle_radius, circle_radius);
+        mouse_circle.setPosition(static_cast<float>(mouse_position.x), static_cast<float>(mouse_position.y));
+        render_target.draw(mouse_circle);
+        render_target.display();
 
         window.clear(sf::Color::Black);
 
-		window.draw(sf::Sprite(render_target.getTexture()));
-		window.draw(blur.apply(render_target.getTexture(), intensity));
+        window.draw(blur.apply(render_target.getTexture()));
+        //window.draw(sf::Sprite(render_target.getTexture()));
 
         window.display();
     }
