@@ -48,9 +48,10 @@ void main()                                                  \
 class Blur
 {
 public:
-    Blur(sf::Vector2u render_size, int32_t iterations)
-        : m_render_size(render_size)
+    Blur(sf::Vector2u render_size, int32_t iterations, float quality = 1.0f)
+        : m_render_size({static_cast<int32_t>(render_size.x * quality), static_cast<int32_t>(render_size.y * quality)})
         , m_iterations(iterations)
+        , m_quality(quality)
     {
         createTextures();
         createShaders();
@@ -78,6 +79,7 @@ private:
     sf::Vector2i      m_render_size;
     int32_t           m_iterations;
     sf::RenderTexture m_textures[2];
+    float             m_quality;
 
     // Shaders
     sf::Shader m_horizontal;

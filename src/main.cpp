@@ -15,7 +15,7 @@ int main()
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
-	Blur blur({WIN_WIDTH, WIN_HEIGHT}, 1.0f, 5);
+	Blur blur({WIN_WIDTH, WIN_HEIGHT}, 5);
 
     sfev::EventManager event_manager(window, true);
     event_manager.addKeyPressedCallback(sf::Keyboard::Escape, [&](sfev::CstEv){window.close();});
