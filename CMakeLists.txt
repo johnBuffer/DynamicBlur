@@ -12,13 +12,14 @@ set(SOURCES ${source_files})
 # Detect and add SFML
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
 find_package(SFML 2 REQUIRED COMPONENTS network audio graphics window system)
+find_package(OpenGL)
 
 # Set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
 
-add_executable(${PROJECT_NAME} ${WIN32_GUI} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "src" "include")
 set(SFML_LIBS sfml-system sfml-window sfml-graphics sfml-audio)
 target_link_libraries(${PROJECT_NAME} ${SFML_LIBS})

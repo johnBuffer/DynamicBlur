@@ -9,14 +9,13 @@ int main()
     constexpr uint32_t WIN_HEIGHT = 900;
 
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "TEST", sf::Style::Default);
-    window.setVerticalSyncEnabled(true);
-    window.setKeyRepeatEnabled(true);
+    window.setVerticalSyncEnabled(false);
 
     sf::RenderTexture render_target, bloom;
 	render_target.create(WIN_WIDTH, WIN_HEIGHT);
 	bloom.create(WIN_WIDTH, WIN_HEIGHT);
 
-	Blur blur({WIN_WIDTH, WIN_HEIGHT}, 1.0f, 2);
+	Blur blur({WIN_WIDTH, WIN_HEIGHT}, 1.0f, 4);
 
     sfev::EventManager event_manager(window, true);
     event_manager.addKeyPressedCallback(sf::Keyboard::Escape, [&](sfev::CstEv){window.close();});
@@ -38,8 +37,8 @@ int main()
 
         window.clear(sf::Color::Black);
 
-        window.draw(blur.apply(render_target.getTexture()));
-        //window.draw(sf::Sprite(render_target.getTexture()));
+        window.draw(sf::Sprite(render_target.getTexture()));
+        window.draw(blur.apply(render_target.getTexture()), sf::BlendAdd);
 
         window.display();
     }

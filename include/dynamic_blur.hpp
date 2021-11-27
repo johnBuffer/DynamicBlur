@@ -62,14 +62,16 @@ public:
     {
         // Retrieve texture content and downscale it
         sf::Sprite sprite(texture);
-        const float downscale = 1.0f / static_cast<float>(1 << m_iterations);
-        sprite.setScale(downscale, downscale);
         uint32_t current_buffer = 0;
         m_textures[current_buffer].draw(sprite);
-        // Iteratively blur
+        //current_buffer = blurIteration(current_buffer, 1);
         for (uint32_t i(m_iterations); i--;) {
-            current_buffer = blurIteration(current_buffer);
+            current_buffer = blurPass(current_buffer, m_iterations - i);
         }
+        for (uint32_t i(m_iterations); i--;) {
+            current_buffer = blurPass(current_buffer, i);
+        }
+        m_textures[current_buffer].display();
         m_result.setTexture(m_textures[current_buffer].getTexture());
         return m_result;
     }
@@ -91,7 +93,8 @@ private:
         // Initialize textures
         m_textures[0].create(m_render_size.x, m_render_size.y);
         m_textures[1].create(m_render_size.x, m_render_size.y);
-        clearTextures();
+        m_textures[0].setSmooth(true);
+        m_textures[1].setSmooth(true);
         // Update clear
         m_textures[0].display();
         m_textures[1].display();
@@ -99,34 +102,61 @@ private:
 
     void createShaders()
     {
-        m_horizontal.loadFromFile("../shaders/fragment.glsl", "../shaders/vertex.glsl");
-        m_horizontal.loadFromMemory(vert_shader, w_shader);
-        m_vertical.loadFromMemory(vert_shader, h_shader);
-
+        m_horizontal.loadFromFile("../shaders/vertex.glsl", "../shaders/fragment_hori.glsl");
+        m_vertical.loadFromFile("../shaders/vertex.glsl", "../shaders/fragment_vert.glsl");
+        // Set pixel steps in shader
         m_horizontal.setUniform("WIDTH", static_cast<float>(m_render_size.x));
         m_vertical.setUniform("HEIGHT", static_cast<float>(m_render_size.y));
     }
 
-    void clearTextures()
+    void clear(uint32_t texture_id)
     {
-        m_textures[0].clear(sf::Color::Black);
-        m_textures[1].clear(sf::Color::Black);
+        m_textures[texture_id].clear(sf::Color::Black);
     }
 
-    uint32_t blurIteration(uint32_t source_buffer)
+    void draw(const sf::Sprite& sprite, uint32_t dest_buffer, const sf::Shader& shader)
     {
-        const uint32_t new_source = blurPass(source_buffer);
-        sf::Sprite sprite(m_textures[new_source].getTexture());
-        sprite.setScale(2.0f, 2.0f);
-        m_textures[!new_source].draw(sprite);
-        return !new_source;
+        clear(dest_buffer);
+        m_textures[dest_buffer].draw(sprite, &shader);
     }
 
-    uint32_t blurPass(uint32_t source_buffer)
+    void draw(const sf::Sprite& sprite, uint32_t dest_buffer)
     {
-        sf::Sprite sprite(m_textures[source_buffer].getTexture());
-        m_textures[!source_buffer].draw(sprite, &m_vertical);
-        m_textures[source_buffer].draw(sprite, &m_horizontal);
+        clear(dest_buffer);
+        m_textures[dest_buffer].draw(sprite);
+    }
+
+    const sf::Texture& getTexture(uint32_t source_buffer)
+    {
+        return m_textures[source_buffer].getTexture();
+    }
+
+    uint32_t blurPass(uint32_t source_buffer, uint32_t downscale)
+    {
+        // Initialize scales and rectangle
+        const float inv_scale = static_cast<float>(1 << downscale);
+        const float scale = 1.0f / inv_scale;
+        const int32_t current_pass_size_x = m_render_size.x >> downscale;
+        const int32_t current_pass_size_y = m_render_size.y >> downscale;
+        // Draw from source to target with separate blur passes
+        sf::Sprite sprite;
+        sprite.setScale(scale, scale);
+        sprite.setTexture(getTexture(source_buffer));
+        draw(sprite, !source_buffer);
+
+        sprite.setScale(1.0f, 1.0f);
+        sprite.setTexture(getTexture(!source_buffer));
+        sprite.setTextureRect({0, 0, current_pass_size_x, current_pass_size_y});
+        draw(sprite, source_buffer, m_horizontal);
+
+        sprite.setTexture(getTexture(source_buffer));
+        draw(sprite, !source_buffer, m_vertical);
+
+        const float safe_scale = 1.0f;
+        sprite.setScale(inv_scale * safe_scale, inv_scale * safe_scale);
+        sprite.setTexture(getTexture(!source_buffer));
+        draw(sprite, source_buffer);
+
         return source_buffer;
     }
 };
